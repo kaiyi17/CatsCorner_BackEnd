@@ -19,6 +19,7 @@ public class ContactController {
     }
 
     @PostMapping("/api/contacts")
+    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
     public ResponseEntity<Contact> createContact(@RequestBody Contact contact) {
         Contact savedContact = contactService.saveContact(contact);
         return ResponseEntity.ok(savedContact);

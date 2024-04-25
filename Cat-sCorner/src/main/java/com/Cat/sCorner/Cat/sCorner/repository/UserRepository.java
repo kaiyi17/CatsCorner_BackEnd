@@ -1,2 +1,13 @@
-package com.Cat.sCorner.Cat.sCorner.repository;public class UserRepository {
+package com.Cat.sCorner.Cat.sCorner.repository;
+
+import com.Cat.sCorner.Cat.sCorner.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByUsername(String userName);
+
 }

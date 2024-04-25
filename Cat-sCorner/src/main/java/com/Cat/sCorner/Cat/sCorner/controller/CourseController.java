@@ -1,16 +1,28 @@
 package com.Cat.sCorner.Cat.sCorner.controller;
 
-import com.Cat.sCorner.Cat.sCorner.entity.Course;
+import com.Cat.sCorner.Cat.sCorner.dto.CourseDTO;
+import com.Cat.sCorner.Cat.sCorner.dto.CourseRegisterDTO;
+import com.Cat.sCorner.Cat.sCorner.dto.UserDTO;
 import com.Cat.sCorner.Cat.sCorner.service.CourseService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 
+
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/courses")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class CourseController {
 
     private final CourseService courseService;
@@ -21,51 +33,43 @@ public class CourseController {
     }
 
     @GetMapping
-    @ResponseBody
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    public ResponseEntity<List<CourseDTO>> getAllCourse()
+    {
+        List<CourseDTO> courseList = courseService.getAllCourses();
+        return ResponseEntity.ok(courseList);
     }
 
-//    @GetMapping
-//    public String listCourses(Model model) {
-//        List<Course> courses = courseService.getAllCourses();
-//        model.addAttribute("courses", courses);
-//        return "courses";
-//    }
-//
-//    @GetMapping("/create")
-//    public String showCreateForm(Model model) {
-//        model.addAttribute("course", new Course());
-//        return "create-course";
-//    }
-//
-//    @PostMapping
-//    public String createCourse(Course course, RedirectAttributes redirectAttributes) {
-//        courseService.createCourse(course);
-//        redirectAttributes.addFlashAttribute("message", "The course has been created！");
-//        return "redirect:/courses";
-//    }
-//
-//    @GetMapping("/edit/{id}")
-//    public String showUpdateForm(@PathVariable Long id, Model model) {
-//        Course course = courseService.getCourseById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid course id:" + id));
-//        model.addAttribute("course", course);
-//        return "update-course";
-//    }
-//
-//    @PostMapping("/{id}")
-//     public String updateCourse(@PathVariable Long id, Course course, RedirectAttributes redirectAttributes) {
-//            course.setId(id);
-//            courseService.updateCourse(course);
-//            redirectAttributes.addFlashAttribute("message", "The course has been updated！！");
-//            return "redirect:/courses";
-//     }
-//
-//    @GetMapping("/delete/{id}")
-//    public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-//            courseService.deleteCourse(id);
-//            redirectAttributes.addFlashAttribute("message", "The course has been deleted！！");
-//            return "redirect:/courses";
-//   }
+    @PostMapping("/register")
+    public ResponseEntity<?> registerCourse(@RequestBody CourseRegisterDTO registration) {
+        try {
+            courseService.registerCourse(registration.getUserId(), registration.getCourseId());
+            return ResponseEntity.ok("Registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registration failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/unregisterCourse")
+    public ResponseEntity<?> unregisterCourse(@RequestBody CourseRegisterDTO registration) {
+        try {
+            courseService.unregisterCourse(registration.getUserId(), registration.getCourseId());
+            return ResponseEntity.ok("Unregistered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unregistration failed: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/registered")
+    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+    public ResponseEntity<?> getRegisteredCourses(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username  = userDetails.getUsername();
+        List<CourseDTO> registeredCourses = courseService.getRegisteredCourses(username);
+        return ResponseEntity.ok(registeredCourses);
+    }
 }
+

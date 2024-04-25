@@ -1,2 +1,9 @@
-package com.Cat.sCorner.Cat.sCorner.dto;public class LoginRequest {
+package com.Cat.sCorner.Cat.sCorner.dto;
+
+import lombok.Getter;
+
+@Getter
+public class LoginRequest {
+    private String email;
+    private String password;
 }
